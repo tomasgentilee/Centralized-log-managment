@@ -1,3 +1,8 @@
+##Exportador de logs de System, Security y Application a formato CSV.
+##Se genera la carpeta correspondiente de la fecha de los logs.
+##Se filtran los logs, unicamente obteniendo los del día en cuestión
+#Nuevo filtro para evitar algunos proveedores que no queremos registrar (prueba)
+
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$false)]
@@ -9,15 +14,26 @@ Param (
 # Obtener la fecha actual en el formato deseado
 $CurrentDate = Get-Date -Format 'yyyy-MM-dd'
 
+# Crear una carpeta para el día actual
+$folderPath = Join-Path -Path $output -ChildPath $CurrentDate
+New-Item -ItemType Directory -Force -Path $folderPath | Out-Null
+
 # Lista de logs a exportar
 $logsToExport = @("Security", "Application", "System")
 
 foreach ($logName in $logsToExport) {
     $LogFullName = "$logTag-$logName"
-    $LogPath = Join-Path -Path $output -ChildPath "$LogFullName-$CurrentDate.csv"
+    $LogPath = Join-Path -Path $folderPath -ChildPath "$LogFullName-$CurrentDate.csv"
+
+    $startTime = Get-Date $CurrentDate
+    $endTime = $startTime.AddDays(1)
 
     Try {
-        Get-WinEvent -LogName $logName -ErrorAction Stop |
+        Get-WinEvent -LogName $logName -FilterHashtable @{
+                StartTime = $startTime;
+                EndTime = $endTime
+            } -ErrorAction Stop |
+            Where-Object { $_.ProviderName -ne 'SynTPEnhService' -and $_.Id -ne 0 } |  # Excluir eventos con ProviderName 'SynTPEnhService' y eventos con ID 0
             Select-Object @{Name="containerLog";Expression={$LogFullName}},
                 @{Name="id";Expression={$_.Id}},
                 @{Name="levelDisplayName";Expression={$_.LevelDisplayName}},
