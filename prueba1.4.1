@@ -33,7 +33,7 @@ foreach ($logName in $logsToExport) {
                 StartTime = $startTime;
                 EndTime = $endTime
             } -ErrorAction Stop |
-            Where-Object { $_.ProviderName -ne 'SynTPEnhService' -and $_.Id -ne 0 } |  # Excluir eventos con ProviderName 'SynTPEnhService' y eventos con ID 0
+            Where-Object { ($_.ProviderName -ne 'SynTPEnhService') -and ($_.Id -ne 0) } |  # Excluir eventos con ProviderName 'SynTPEnhService' y eventos con ID 0
             Select-Object @{Name="containerLog";Expression={$LogFullName}},
                 @{Name="id";Expression={$_.Id}},
                 @{Name="levelDisplayName";Expression={$_.LevelDisplayName}},
