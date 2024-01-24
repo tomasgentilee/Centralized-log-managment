@@ -1,7 +1,7 @@
 ##Exportador de logs de System, Security y Application a formato CSV.
-##Se genera la carpeta correspondiente de la fecha de los logs.
-##Se filtran los logs, unicamente obteniendo los del día en cuestión
-#Nuevo filtro para evitar algunos proveedores que no queremos registrar (prueba)
+##Se genera la carpeta correspondiente de la fecha de los logs, con el $folderPath
+##Se filtran los logs, unicamente obteniendo los del día en cuestión, para ellos se utiliza el -FilterXPath con los QueryList
+#Nuevo filtro para evitar algunos proveedores que no queremos registrar, utilizando el Where-Object
 
 [CmdletBinding()]
 Param (
@@ -29,11 +29,9 @@ foreach ($logName in $logsToExport) {
     $endTime = $startTime.AddDays(1)
 
     Try {
-        Get-WinEvent -LogName $logName -FilterHashtable @{
-                StartTime = $startTime;
-                EndTime = $endTime
-            } -ErrorAction Stop |
-            Where-Object { ($_.ProviderName -ne 'SynTPEnhService') -and ($_.Id -ne 0) } |  # Excluir eventos con ProviderName 'SynTPEnhService' y eventos con ID 0
+        Get-WinEvent -LogName $logName -FilterXPath ("<QueryList><Query Id='0' Path='$logName'><Select Path='$logName'>*[System[TimeCreated[@SystemTime&gt;='{0:yyyy-MM-ddTHH:mm:ss}' and @SystemTime&lt;'{1:yyyy-MM-ddTHH:mm:ss}']]]</Select></Query></QueryList>" -f $startTime, $endTime) -ErrorAction Stop |
+            ##Filtra por el providerName
+            Where-Object { ($_.ProviderName -ne 'SynTPEnhService') } |
             Select-Object @{Name="containerLog";Expression={$LogFullName}},
                 @{Name="id";Expression={$_.Id}},
                 @{Name="levelDisplayName";Expression={$_.LevelDisplayName}},
