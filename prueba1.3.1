@@ -1,6 +1,6 @@
 ##Exportador de logs de System, Security y Application a formato CSV.
 ##Se genera la carpeta correspondiente de la fecha de los logs.
-##Se filtran los logs, unicamente obteniendo los del día en cuestión
+##Se filtran los logs, unicamente obteniendo los del día en cuestión (probando)
 
 [CmdletBinding()]
 Param (
@@ -24,14 +24,11 @@ foreach ($logName in $logsToExport) {
     $LogFullName = "$logTag-$logName"
     $LogPath = Join-Path -Path $folderPath -ChildPath "$LogFullName-$CurrentDate.csv"
 
-    $startTime = (Get-Date $CurrentDate).Date
+    $startTime = Get-Date $CurrentDate
     $endTime = $startTime.AddDays(1)
 
     Try {
-        Get-WinEvent -LogName $logName -FilterHashtable @{
-                StartTime = $startTime;
-                EndTime = $endTime
-            } -ErrorAction Stop |
+        Get-WinEvent -LogName $logName -FilterXPath ("<QueryList><Query Id='0' Path='$logName'><Select Path='$logName'>*[System[TimeCreated[@SystemTime&gt;='{0:yyyy-MM-ddTHH:mm:ss}' and @SystemTime&lt;'{1:yyyy-MM-ddTHH:mm:ss}']]]</Select></Query></QueryList>" -f $startTime, $endTime) -ErrorAction Stop |
             Select-Object @{Name="containerLog";Expression={$LogFullName}},
                 @{Name="id";Expression={$_.Id}},
                 @{Name="levelDisplayName";Expression={$_.LevelDisplayName}},
