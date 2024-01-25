@@ -1,7 +1,7 @@
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$false)]
-    [string]$output="C:\Program Files\Logs\Collected Logs",
+    [string]$output="C:\Users\Segadmin\Documents\EVTVW",
     [Parameter(Mandatory=$false)]
     $logTag = $env:ComputerName
 )
@@ -10,21 +10,21 @@ Param (
 $CurrentDate = Get-Date -Format 'yyyy-MM-dd'
 
 # Crear una carpeta para el día actual
-$folderPath = Join-Path -Path $output -ChildPath $logTag -ErrorAction SilentlyContinue
-if (-not (Test-Path -Path $folderPath)) {
-    New-Item -ItemType Directory -Force -Path $folderPath | Out-Null
-}
-
-$folderPath = Join-Path -Path $folderPath -ChildPath $CurrentDate
+$folderPath = Join-Path -Path $output -ChildPath $CurrentDate
 New-Item -ItemType Directory -Force -Path $folderPath | Out-Null
 
-# Log ForwardedEvents
-$LogFullName = "$logTag-ForwardedEvents"
+# LogName específico para Forwarded Events
+$logName = "ForwardedEvents"
+$LogFullName = "$logTag-$logName"
 $LogPath = Join-Path -Path $folderPath -ChildPath "$LogFullName-$CurrentDate.csv"
 
-# Obtener eventos del log ForwardedEvents
+$startTime = Get-Date $CurrentDate
+$endTime = $startTime.AddDays(1)
+
 Try {
-    Get-WinEvent -LogName ForwardedEvents -ErrorAction Stop |
+    Get-WinEvent -LogName $logName -FilterXPath ("<QueryList><Query Id='0' Path='$logName'><Select Path='$logName'>*[System[TimeCreated[@SystemTime&gt;='{0:yyyy-MM-ddTHH:mm:ss}' and @SystemTime&lt;'{1:yyyy-MM-ddTHH:mm:ss}']]]</Select></Query></QueryList>" -f $startTime, $endTime) -ErrorAction Stop |
+        ## Filtra por el providerName
+        Where-Object { ($_.ProviderName -ne 'SynTPEnhService') } |
         Select-Object @{Name="containerLog";Expression={$LogFullName}},
             @{Name="id";Expression={$_.Id}},
             @{Name="levelDisplayName";Expression={$_.LevelDisplayName}},
@@ -38,5 +38,5 @@ Try {
             Export-Csv -NoTypeInformation -Path $LogPath
 }
 Catch {
-    Write-Verbose "No se pudieron encontrar registros en el log ForwardedEvents en la fecha $CurrentDate."
+    Write-Verbose "No se pudieron encontrar registros en el log $logName en la fecha $CurrentDate."
 }
