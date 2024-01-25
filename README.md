@@ -1,17 +1,15 @@
-Proyecto de Automatización de Recopilación y Análisis de Logs
+##Proyecto de Automatización de Recopilación y Análisis de Logs
 Descripción del Proyecto
 El objetivo de este proyecto es desarrollar un sistema que permita la recolección y análisis automatizado de logs del sistema operativo Windows. Para lograr esto, se utilizarán scripts de PowerShell para la exportación de logs a formato CSV, y una aplicación Java para procesar y analizar estos registros.
 
-Índice
-Configuraciones Iniciales
-Scripts de PowerShell
-2.1 Exportador de Logs (Script Actual)
-2.2 Segundo Script de PowerShell (por implementar)
-Aplicación Java
-3 Aplicación Java
+##Índice
+1.1 Configuraciones Iniciales
+2.1 Recolector de logs locales
+2.2 Recolector de logs externos
+3 Aplicacion Java
 
 
-1. Configuraciones Iniciales
+##1. Configuraciones Iniciales
 Antes de ejecutar los scripts de PowerShell y la aplicación Java, asegúrese de realizar las siguientes configuraciones iniciales:
 
 Configuración del Entorno:
