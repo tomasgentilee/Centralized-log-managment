@@ -9,32 +9,33 @@ Param (
 # Obtener la fecha actual en el formato deseado
 $CurrentDate = Get-Date -Format 'yyyy-MM-dd'
 
-# Crear una carpeta para la máquina actual
-$machineFolderPath = Join-Path -Path $output -ChildPath $logTag -ErrorAction SilentlyContinue
-if (-not (Test-Path -Path $machineFolderPath)) {
-    New-Item -ItemType Directory -Force -Path $machineFolderPath | Out-Null
+# Crear una carpeta para el día actual
+$folderPath = Join-Path -Path $output -ChildPath $logTag -ErrorAction SilentlyContinue
+if (-not (Test-Path -Path $folderPath)) {
+    New-Item -ItemType Directory -Force -Path $folderPath | Out-Null
 }
+
+$folderPath = Join-Path -Path $folderPath -ChildPath $CurrentDate
+New-Item -ItemType Directory -Force -Path $folderPath | Out-Null
 
 # Log ForwardedEvents
 $LogFullName = "$logTag-ForwardedEvents"
-$forwardedEventsFolderPath = Join-Path -Path $machineFolderPath -ChildPath $CurrentDate
-New-Item -ItemType Directory -Force -Path $forwardedEventsFolderPath | Out-Null
+$LogPath = Join-Path -Path $folderPath -ChildPath "$LogFullName-$CurrentDate.csv"
 
-# Obtener eventos del log ForwardedEvents y separarlos por tipo (Security, System, Application)
+# Obtener eventos del log ForwardedEvents
 Try {
-    $forwardedEvents = Get-WinEvent -LogName ForwardedEvents -ErrorAction Stop
-
-    $securityEvents = $forwardedEvents | Where-Object { $_.Id -eq 4624 -or $_.Id -eq 4625 } # Puedes ajustar los ID según tus necesidades
-    $systemEvents = $forwardedEvents | Where-Object { $_.Id -eq 1074 -or $_.Id -eq 6005 } # Puedes ajustar los ID según tus necesidades
-    $applicationEvents = $forwardedEvents | Where-Object { $_.Id -eq 1001 -or $_.Id -eq 1002 } # Puedes ajustar los ID según tus necesidades
-
-    $securityLogPath = Join-Path -Path $forwardedEventsFolderPath -ChildPath "$LogFullName-Security-$CurrentDate.csv"
-    $systemLogPath = Join-Path -Path $forwardedEventsFolderPath -ChildPath "$LogFullName-System-$CurrentDate.csv"
-    $applicationLogPath = Join-Path -Path $forwardedEventsFolderPath -ChildPath "$LogFullName-Application-$CurrentDate.csv"
-
-    $securityEvents | Export-Csv -NoTypeInformation -Path $securityLogPath
-    $systemEvents | Export-Csv -NoTypeInformation -Path $systemLogPath
-    $applicationEvents | Export-Csv -NoTypeInformation -Path $applicationLogPath
+    Get-WinEvent -LogName ForwardedEvents -ErrorAction Stop |
+        Select-Object @{Name="containerLog";Expression={$LogFullName}},
+            @{Name="id";Expression={$_.Id}},
+            @{Name="levelDisplayName";Expression={$_.LevelDisplayName}},
+            MachineName,
+            @{Name="LogName";Expression={$LogFullName}},
+            ProcessId,
+            @{Name="UserId";Expression={$_.Properties[8].Value}},
+            @{Name="ProviderName";Expression={$_.ProviderName}},
+            @{Name="TimeCreated";Expression={$_.TimeCreated.ToUniversalTime().ToString('yyyy-MM-dd HH:mm:ssZ')}},
+            @{Name="Message";Expression={$_.Message -replace "\r\n"," | " -replace "\n", " | " -replace "The local computer may not have the necessary registry information or message DLL files to display the message, or you may not have permission to access them.",""}} | 
+            Export-Csv -NoTypeInformation -Path $LogPath
 }
 Catch {
     Write-Verbose "No se pudieron encontrar registros en el log ForwardedEvents en la fecha $CurrentDate."
