@@ -1,7 +1,7 @@
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$false)]
-    [string]$output="C:\Users\Segadmin\Documents\EVTVW",
+    [string]$output="C:\Program Files\Logs\Collected Logs",
     [Parameter(Mandatory=$false)]
     $logTag = $env:ComputerName
 )
