@@ -1,7 +1,7 @@
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$false)]
-    [string]$output="C:\Program Files\Logs",
+    [string]$output="C:\Users\Segadmin\Documents\EVTVW",
     [Parameter(Mandatory=$false)]
     $logTag = $env:ComputerName
 )
@@ -18,33 +18,25 @@ if (-not (Test-Path -Path $folderPath)) {
 $folderPath = Join-Path -Path $folderPath -ChildPath $CurrentDate
 New-Item -ItemType Directory -Force -Path $folderPath | Out-Null
 
-# Lista de logs a exportar
-$logsToExport = @("Security", "Application", "System")
+# Log ForwardedEvents
+$LogFullName = "$logTag-ForwardedEvents"
+$LogPath = Join-Path -Path $folderPath -ChildPath "$LogFullName-$CurrentDate.csv"
 
-foreach ($logName in $logsToExport) {
-    $LogFullName = "$logTag-$logName"
-    $LogPath = Join-Path -Path $folderPath -ChildPath "$LogFullName-$CurrentDate.csv"
-
-    $startTime = Get-Date $CurrentDate
-    $endTime = $startTime.AddDays(1)
-
-    Try {
-        Get-WinEvent -LogName $logName -FilterXPath ("<QueryList><Query Id='0' Path='$logName'><Select Path='$logName'>*[System[TimeCreated[@SystemTime&gt;='{0:yyyy-MM-ddTHH:mm:ss}' and @SystemTime&lt;'{1:yyyy-MM-ddTHH:mm:ss}']]]</Select></Query></QueryList>" -f $startTime, $endTime) -ErrorAction Stop |
-            ## Filtra por el providerName
-            Where-Object { ($_.ProviderName -ne 'SynTPEnhService') } |
-            Select-Object @{Name="containerLog";Expression={$LogFullName}},
-                @{Name="id";Expression={$_.Id}},
-                @{Name="levelDisplayName";Expression={$_.LevelDisplayName}},
-                MachineName,
-                @{Name="LogName";Expression={$LogFullName}},
-                ProcessId,
-                @{Name="UserId";Expression={$_.Properties[8].Value}},
-                @{Name="ProviderName";Expression={$_.ProviderName}},
-                @{Name="TimeCreated";Expression={$_.TimeCreated.ToUniversalTime().ToString('yyyy-MM-dd HH:mm:ssZ')}},
-                @{Name="Message";Expression={$_.Message -replace "\r\n"," | " -replace "\n", " | " -replace "The local computer may not have the necessary registry information or message DLL files to display the message, or you may not have permission to access them.",""}} | 
-                Export-Csv -NoTypeInformation -Path $LogPath
-    }
-    Catch {
-        Write-Verbose "No se pudieron encontrar registros en el log $logName en la fecha $CurrentDate."
-    }
+# Obtener eventos del log ForwardedEvents
+Try {
+    Get-WinEvent -LogName ForwardedEvents -ErrorAction Stop |
+        Select-Object @{Name="containerLog";Expression={$LogFullName}},
+            @{Name="id";Expression={$_.Id}},
+            @{Name="levelDisplayName";Expression={$_.LevelDisplayName}},
+            MachineName,
+            @{Name="LogName";Expression={$LogFullName}},
+            ProcessId,
+            @{Name="UserId";Expression={$_.Properties[8].Value}},
+            @{Name="ProviderName";Expression={$_.ProviderName}},
+            @{Name="TimeCreated";Expression={$_.TimeCreated.ToUniversalTime().ToString('yyyy-MM-dd HH:mm:ssZ')}},
+            @{Name="Message";Expression={$_.Message -replace "\r\n"," | " -replace "\n", " | " -replace "The local computer may not have the necessary registry information or message DLL files to display the message, or you may not have permission to access them.",""}} | 
+            Export-Csv -NoTypeInformation -Path $LogPath
+}
+Catch {
+    Write-Verbose "No se pudieron encontrar registros en el log ForwardedEvents en la fecha $CurrentDate."
 }
