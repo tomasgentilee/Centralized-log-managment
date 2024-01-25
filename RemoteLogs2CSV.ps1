@@ -11,9 +11,6 @@ $CurrentDate = Get-Date -Format 'yyyy-MM-dd'
 $logsToExport = @("Security", "Application", "System")
 
 foreach ($logName in $logsToExport) {
-    $LogPath = Join-Path -Path $output -ChildPath $logName
-    New-Item -ItemType Directory -Force -Path $LogPath | Out-Null
-
     Try {
         Get-WinEvent -LogName ForwardedEvents -FilterXPath ("<QueryList><Query Id='0' Path='ForwardedEvents'><Select Path='ForwardedEvents'>*[System[TimeCreated[@SystemTime&gt;='{0:yyyy-MM-ddTHH:mm:ss}' and @SystemTime&lt;'{1:yyyy-MM-ddTHH:mm:ss}']]]</Select></Query></QueryList>" -f $startTime, $endTime) -ErrorAction Stop |
             ## Filtra por el providerName
@@ -21,7 +18,7 @@ foreach ($logName in $logsToExport) {
             Group-Object -Property MachineName |
             ForEach-Object {
                 $machineName = $_.Name
-                $MachineFolderPath = Join-Path -Path $LogPath -ChildPath $machineName
+                $MachineFolderPath = Join-Path -Path $output -ChildPath $machineName
                 New-Item -ItemType Directory -Force -Path $MachineFolderPath | Out-Null
 
                 $events = $_.Group
