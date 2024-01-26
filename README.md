@@ -14,6 +14,9 @@ El objetivo de este proyecto es desarrollar un sistema que permita la recolecci�
 
 3 Aplicacion Java
 
+4 Recomendacione
+
+5 Redes sociales
 
 	1.1 : Introducción
 
@@ -34,14 +37,26 @@ https://dronesenlasaulas.es/tutoriales/usuarios-y-grupos-locales-de-windows-10/
 
 Por ultimo debemos configurar nuestro WEC. Desde el event viewer en la pestaña suscripciones podemos crear la suscripcion que querramos. Allí estableceremos el nombre, el registro destino (Forwarded event), los equipos de los cuales deseamos recopilar sus logs, los eventos a recolectar, etc.
 
-
 	2. Scripts de PowerShell
 
-2.1 Exportador de Logs de System, Security y Application a Formato CSV
-Este script de PowerShell se encarga de exportar logs de los eventos de System, Security y Application del día actual a archivos CSV. Además, crea una carpeta correspondiente a la fecha y aplica filtros para excluir eventos no deseados.
+Ya configurado nuestro entorno comenzaremos a recibir en el Forwarded event todos los logs correspondientes de cada ordenador, por lo que ahora implementaremos ambos scripts.
+Algunas de las ventajas que tiene cada uno de ellos es que son muy customizables; cuentan con diversos filtros para que solo se obtengan los logs de la fecha en cuestion (con el -FilterXPath), otros para excluir algun log no deseado (mediante el Where-Object), entre otros.
 
-2.2 Segundo Script de PowerShell
-Este espacio está reservado para la descripción del segundo script de PowerShell que se implementará en el proyecto. Incluya detalles sobre su función y configuración.
+	2.1 Exportador de Logs locales a Formato CSV
+ 
+Este script de PowerShell se encarga de exportar logs de los eventos de System, Security, Setup y Application del día actual a archivos CSV. Además, crea una carpeta correspondiente a la fecha y aplica filtros para excluir eventos no deseados.
+
+En la variable $output tendremos la ruta donde se guardara el registro, $logsToExport son los registros a exportar, $logTag es el nombre del ordenador y $logName el nombre del log.
+
+El Script cuenta con dos filtros, el -FilterXPath el cual filtra por la fecha pero puede ser editado para filtrar por lo que uno desee, y el Where-Object el cual nos permite hacer una capa extra para el filtrado de registros que no sean importantes para nosotros. 
+
+Por ultimo arma nuestro registro con el Select-Object y lo exporta con el Export-Csv al $LogPath.
+
+	2.2 Exportador de Forwarded event
+ 
+Este script de PowerShell se encarga unicamenten de exportar logs de los eventos recibidos en el WEC, los cuales se encuentran en el Forwarded event. Al igual que el anterior los filtra por el día correspondiente, excluyendo los eveentos no deseados, y los exporta a una carpeta.
+
+Este script esta separado del anterior para poder darle la frecuencia que deseemos a la recoleccion de los registros que obtenemos en nuestro WEC.
 
 	3. Aplicación Java
  
@@ -51,5 +66,18 @@ Leer y cargar archivos CSV generados por los scripts de PowerShell.
 Implementar lógica de análisis y procesamiento de logs según los requisitos del proyecto.
 Generar informes, estadísticas o cualquier otra salida necesaria.
 
-Adjunto el link del repositorio: https://github.com/tomasgentilee/openSiem/tree/main
+Adjunto el link del repositorio: 
 
+https://github.com/tomasgentilee/openSiem/tree/main
+
+	4. Recomendaciones
+
+Una recomendación para que la recolección se realice de manera automatica es crear la tarea para la ejecución del script desde el programador de tareas de Windows. De esta manera le podremos dar la frecuencia que querramos a la descarga de los registros. Puede ver como crear la tarea en el siguiente video: 
+
+https://www.youtube.com/watch?v=CJw_JEt_L6I&ab_channel=RicardoAniceto
+
+	5. Redes sociales
+
+Brindo mi linkedin para cualquier recomendación que deseen realizarme. También allí ire publicando cosas del proyecto:
+
+https://www.linkedin.com/in/tom%C3%A1s-gentile/
