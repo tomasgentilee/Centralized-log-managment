@@ -40,5 +40,5 @@ Leer y cargar archivos CSV generados por los scripts de PowerShell.
 Implementar lógica de análisis y procesamiento de logs según los requisitos del proyecto.
 Generar informes, estadísticas o cualquier otra salida necesaria.
 
-Adjunto el link del repositorio: 
+Adjunto el link del repositorio: https://github.com/tomasgentilee/openSiem/tree/main
 
