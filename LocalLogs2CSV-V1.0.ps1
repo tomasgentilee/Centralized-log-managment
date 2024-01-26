@@ -1,4 +1,4 @@
-﻿##Exportador de logs de System, Security y Application a formato CSV.
+##Exportador de logs de System, Security y Application a formato CSV.
 ##Se genera la carpeta correspondiente de la fecha de los logs, con el $folderPath
 ##Se filtran los logs, unicamente obteniendo los del día en cuestión, para ellos se utiliza el -FilterXPath con los QueryList
 #Nuevo filtro para evitar algunos proveedores que no queremos registrar, utilizando el Where-Object
@@ -19,7 +19,7 @@ $folderPath = Join-Path -Path $output -ChildPath $CurrentDate
 New-Item -ItemType Directory -Force -Path $folderPath | Out-Null
 
 # Lista de logs a exportar
-$logsToExport = @("Security", "Application", "System")
+$logsToExport = @("Security", "Application", "System", "Setup")
 
 foreach ($logName in $logsToExport) {
     $LogFullName = "$logTag-$logName"
