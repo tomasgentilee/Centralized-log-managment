@@ -39,5 +39,6 @@ La aplicación Java se encargará de procesar y analizar los archivos CSV genera
 Leer y cargar archivos CSV generados por los scripts de PowerShell.
 Implementar lógica de análisis y procesamiento de logs según los requisitos del proyecto.
 Generar informes, estadísticas o cualquier otra salida necesaria.
-Recuerde documentar la aplicación Java, proporcionando información sobre la configuración, uso y posibles integraciones con otros sistemas.
+
+Adjunto el link del repositorio: 
 
