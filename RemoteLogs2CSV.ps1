@@ -1,7 +1,7 @@
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory=$false)]
-    [string]$output="C:\Users\Segadmin\Documents\EVTVW",
+    [string]$output="C:\Users\Administrator\Documents\Recolector\Logs\Externos",
     [Parameter(Mandatory=$false)]
     $logTag = $env:ComputerName
 )
@@ -9,22 +9,18 @@ Param (
 # Obtener la fecha actual en el formato deseado
 $CurrentDate = Get-Date -Format 'yyyy-MM-dd'
 
-# Crear una carpeta para el día actual
-$folderPath = Join-Path -Path $output -ChildPath $logTag -ErrorAction SilentlyContinue
-if (-not (Test-Path -Path $folderPath)) {
-    New-Item -ItemType Directory -Force -Path $folderPath | Out-Null
-}
-
-$folderPath = Join-Path -Path $folderPath -ChildPath $CurrentDate
+# Construir la carpeta para la fecha actual
+$folderPath = Join-Path -Path $output -ChildPath $CurrentDate
 New-Item -ItemType Directory -Force -Path $folderPath | Out-Null
 
-# Log ForwardedEvents
+# Construir el nombre completo del log
 $LogFullName = "$logTag-ForwardedEvents"
 $LogPath = Join-Path -Path $folderPath -ChildPath "$LogFullName-$CurrentDate.csv"
 
-# Obtener eventos del log ForwardedEvents
 Try {
-    Get-WinEvent -LogName ForwardedEvents -ErrorAction Stop |
+    # Obtener eventos Forwarded Events de la computadora local
+    Get-WinEvent -LogName ForwardedEvents -FilterXPath ("<QueryList><Query Id='0' Path='ForwardedEvents'><Select Path='ForwardedEvents'>*[System[TimeCreated[@SystemTime&gt;='{0:yyyy-MM-ddTHH:mm:ss}' and @SystemTime&lt;'{1:yyyy-MM-ddTHH:mm:ss}']]]</Select></Query></QueryList>" -f $startTime, $endTime) -ErrorAction Stop |
+        Where-Object { ($_.ProviderName -ne 'SynTPEnhService') } |
         Select-Object @{Name="containerLog";Expression={$LogFullName}},
             @{Name="id";Expression={$_.Id}},
             @{Name="levelDisplayName";Expression={$_.LevelDisplayName}},
@@ -38,6 +34,5 @@ Try {
             Export-Csv -NoTypeInformation -Path $LogPath
 }
 Catch {
-    Write-Verbose "No se pudieron encontrar registros en el log ForwardedEvents en la fecha $CurrentDate."
+    Write-Verbose "No se pudieron encontrar registros en ForwardedEvents en la fecha $CurrentDate."
 }
-
