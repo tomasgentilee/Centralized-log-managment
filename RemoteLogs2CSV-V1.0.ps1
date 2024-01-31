@@ -8,6 +8,8 @@ Param (
 
 # Obtener la fecha actual en el formato deseado
 $CurrentDate = Get-Date -Format 'yyyy-MM-dd'
+$startTime = Get-Date $CurrentDate
+$endTime = $startTime.AddDays(1)
 
 # Construir la carpeta para la fecha actual
 $folderPath = Join-Path -Path $output -ChildPath $CurrentDate
