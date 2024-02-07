@@ -48,7 +48,7 @@ foreach ($logName in $logsToExport) {
                 @{Name="TimeCreated";Expression={$_.TimeCreated.ToUniversalTime().ToString('yyyy-MM-dd HH:mm:ssZ')}},
                 @{Name="Message";Expression={$_.Message -replace "\r\n"," | " -replace "\n", " | " -replace "The local computer may not have the necessary registry information or message DLL files to display the message, or you may not have permission to access them.",""}} | 
                 Export-Csv -NoTypeInformation -Path $LogPath
-        
+                Remove-Item $folderPath\*.pgp
     }
     Catch {
         Write-Verbose "No se pudieron encontrar registros en el log $logName en la fecha $CurrentDate."
