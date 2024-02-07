@@ -11,6 +11,11 @@ Param (
     $logTag = $env:ComputerName
 )
 
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
+
+##Creación de llaves para el encriptado
+$key = "C:\Users\Segadmin\Documents\EVTVW\Key\PublicPGP.asc"
+
 # Obtener la fecha actual en el formato deseado
 $CurrentDate = Get-Date -Format 'yyyy-MM-dd'
 
@@ -43,8 +48,14 @@ foreach ($logName in $logsToExport) {
                 @{Name="TimeCreated";Expression={$_.TimeCreated.ToUniversalTime().ToString('yyyy-MM-dd HH:mm:ssZ')}},
                 @{Name="Message";Expression={$_.Message -replace "\r\n"," | " -replace "\n", " | " -replace "The local computer may not have the necessary registry information or message DLL files to display the message, or you may not have permission to access them.",""}} | 
                 Export-Csv -NoTypeInformation -Path $LogPath
+        
     }
     Catch {
         Write-Verbose "No se pudieron encontrar registros en el log $logName en la fecha $CurrentDate."
     }
 }
+
+##Encriptar los archivos csv y eliminar los duplicados
+
+Protect-PGP -FilePathPublic $key -FolderPath $folderPath -OutputFolderPath $folderPath
+Remove-Item $folderPath\*.csv
