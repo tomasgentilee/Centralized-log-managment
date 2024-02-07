@@ -35,7 +35,11 @@ Luego debemos establecerle el rol correspondientes como lector del registro de e
 
 https://dronesenlasaulas.es/tutoriales/usuarios-y-grupos-locales-de-windows-10/
 
-Por ultimo debemos configurar nuestro WEC. Desde el event viewer en la pestaña suscripciones podemos crear la suscripcion que querramos. Allí estableceremos el nombre, el registro destino (Forwarded event), los equipos de los cuales deseamos recopilar sus logs, los eventos a recolectar, etc.
+A continuación debemos configurar nuestro WEC. Desde el event viewer en la pestaña suscripciones podemos crear la suscripcion que querramos. Allí estableceremos el nombre, el registro destino (Forwarded event), los equipos de los cuales deseamos recopilar sus logs, los eventos a recolectar, etc.
+
+Todos los archivos se guardaran encriptados. Para ello utilizamos el modulo PSPGP el cual nos brinda los algunos scripts utiles para el encriptado PGP. En el siguiente link podrán ver como importar el modulo, crear las llaves, etc:
+
+https://github.com/EvotecIT/PSPGP
 
 	2. Scripts de PowerShell
 
@@ -50,7 +54,7 @@ En la variable $output tendremos la ruta donde se guardara el registro, $logsToE
 
 El Script cuenta con dos filtros, el -FilterXPath el cual filtra por la fecha pero puede ser editado para filtrar por lo que uno desee, y el Where-Object el cual nos permite hacer una capa extra para el filtrado de registros que no sean importantes para nosotros. 
 
-Por ultimo arma nuestro registro con el Select-Object y lo exporta con el Export-Csv al $LogPath.
+Luego arma nuestro registro con el Select-Object y lo exporta con el Export-Csv al $LogPath. Al finalizar de exportar todos los csv el script los encripta y elimina los archivos csv duplicados dejando unicamente los encriptados en formato PGP.
 
 	2.2 Exportador de Forwarded event
  
